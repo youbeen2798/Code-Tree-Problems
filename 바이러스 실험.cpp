@@ -6,15 +6,9 @@
 
 using namespace std;
 
-int n; //¹èÁöÀÇ Å©±â
-int m; //¹ÙÀÌ·¯½º °³¼ö
-int k; //ÃÑ »çÀÌÅ¬ °³¼ö
-
-struct info {
-	int r; //Çà
-	int c; //¿­
-	int age; //³ªÀÌ
-};
+int n; //ë°°ì§€ì˜ í¬ê¸°
+int m; //ë°”ì´ëŸ¬ìŠ¤ ê°œìˆ˜
+int k; //ì´ ì‚¬ì´í´ ê°œìˆ˜
 
 int plus_map[11][11];
 int map[11][11];
@@ -30,9 +24,7 @@ bool inrange(int x, int y) {
 	return false;
 }
 void virus_eat_nutrients(int x, int y) {
-	//(x,y)¿¡ ÀÖ´Â ¹ÙÀÌ·¯½º°¡ ¾çºĞÀ» ¸Ô´Â´Ù.
-
-	sort(virus_map[x][y].begin(), virus_map[x][y].end());
+	//(x,y)ì— ìˆëŠ” ë°”ì´ëŸ¬ìŠ¤ê°€ ì–‘ë¶„ì„ ë¨¹ëŠ”ë‹¤.
 
 	deque<int> tmp;
 	int size = virus_map[x][y].size();
@@ -41,11 +33,11 @@ void virus_eat_nutrients(int x, int y) {
 		int age = virus_map[x][y][i];
 
 		if (age <=  map[x][y]) {
-			//³ªÀÌ°¡ ´õ Àû´Ù¸é
+			//ë‚˜ì´ê°€ ë” ì ë‹¤ë©´
 			map[x][y] -= age;
 			tmp.push_back(age + 1);
 		}
-		else { //¾çºĞÀÌ ºÎÁ·ÇÏ¿© ³ªÀÌ¸¸Å­ ¾çºĞÀ» ¼·ÃëÇÒ ¼ö ¾ø´Ù¸é
+		else { //ì–‘ë¶„ì´ ë¶€ì¡±í•˜ì—¬ ë‚˜ì´ë§Œí¼ ì–‘ë¶„ì„ ì„­ì·¨í•  ìˆ˜ ì—†ë‹¤ë©´
 			tmp.push_back(-1 * age);
 		}
 	}
@@ -53,7 +45,7 @@ void virus_eat_nutrients(int x, int y) {
 	virus_map[x][y] = tmp;
 }
 void all_virus_eat_nutrients() {
-	//°¢°¢ÀÇ ¹ÙÀÌ·¯½º´Â º»ÀÎÀÌ ¼ÓÇÑ 1*1 Å©±âÀÇ Ä­¿¡ ÀÖ´Â ¾çºĞÀ» ¼·ÃëÇÑ´Ù.
+	//ê°ê°ì˜ ë°”ì´ëŸ¬ìŠ¤ëŠ” ë³¸ì¸ì´ ì†í•œ 1*1 í¬ê¸°ì˜ ì¹¸ì— ìˆëŠ” ì–‘ë¶„ì„ ì„­ì·¨í•œë‹¤.
 
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
@@ -70,14 +62,14 @@ void dead_virus_change_to_nutrients(int x, int y) {
 
 	for (int i = size - 1; i >= 0; i--) {
 		if (virus_map[x][y][i] < 0) {
-			//¹ÙÀÌ·¯½º°¡ Á×¾úÀ¸¸é
+			//ë°”ì´ëŸ¬ìŠ¤ê°€ ì£½ì—ˆìœ¼ë©´
 			map[x][y] += abs(virus_map[x][y][i]) / 2;
 			virus_map[x][y].pop_back();
 		}
 	}
 }
 void all_dead_virus_change_to_nutrients() {
-	//Á×Àº ¹ÙÀÌ·¯½º°¡ ¾çºĞÀ¸·Î º¯ÇÑ´Ù.
+	//ì£½ì€ ë°”ì´ëŸ¬ìŠ¤ê°€ ì–‘ë¶„ìœ¼ë¡œ ë³€í•œë‹¤.
 
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
@@ -103,7 +95,7 @@ void virus_have_baby(int x, int y){
 			int ny = y + dy[j];
 
 			if (inrange(nx, ny)) {
-				//³ªÀÌ°¡ 1ÀÎ ¹ÙÀÌ·¯½º°¡ »ı±ä´Ù.
+				//ë‚˜ì´ê°€ 1ì¸ ë°”ì´ëŸ¬ìŠ¤ê°€ ìƒê¸´ë‹¤.
 				virus_map[nx][ny].push_front(1);
 			}
 		}
@@ -111,7 +103,7 @@ void virus_have_baby(int x, int y){
 	
 }
 void all_virus_have_babies() {
-	//¹ÙÀÌ·¯½º°¡ ¹ø½ÄÀ» ÁøÇàÇÑ´Ù.
+	//ë°”ì´ëŸ¬ìŠ¤ê°€ ë²ˆì‹ì„ ì§„í–‰í•œë‹¤.
 
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
@@ -167,6 +159,12 @@ void input() {
 		int r, c, age;
 		cin >> r >> c >> age;
 		virus_map[r][c].push_back(age);
+	}
+
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= n; j++) {
+			sort(virus_map[i][j].begin(), virus_map[i][j].end());
+		}
 	}
 }
 
