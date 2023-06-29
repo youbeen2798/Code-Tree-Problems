@@ -1,149 +1,160 @@
 #include <iostream>
-#include <vector>
 #include <deque>
-#include <cstring>
 #include <algorithm>
 
 using namespace std;
 
-int n; //ë°°ì§€ì˜ í¬ê¸°
-int m; //ë°”ì´ëŸ¬ìŠ¤ ê°œìˆ˜
-int k; //ì´ ì‚¬ì´í´ ê°œìˆ˜
+int n; //¹èÁöÀÇ Å©±â
+int m; //¹ÙÀÌ·¯½º °³¼ö
+int k; //»çÀÌÅ¬ ¼ö
 
-int plus_map[11][11];
+int plus_map[11][11]; //¸¶Áö¸·¿¡ Ãß°¡µÇ´Â ¾çºĞÀÇ ¾ç
 int map[11][11];
-deque<int> virus_map[11][11];
+deque<int> virus[11][11];
 
 int dx[8] = { -1,-1,-1,0,0,1,1,1 };
 int dy[8] = { -1,0,1,-1,1,-1,0,1 };
 
 bool inrange(int x, int y) {
+
 	if (1 <= x && x <= n && 1 <= y && y <= n) {
 		return true;
 	}
 	return false;
 }
-void virus_eat_nutrients(int x, int y) {
-	//(x,y)ì— ìˆëŠ” ë°”ì´ëŸ¬ìŠ¤ê°€ ì–‘ë¶„ì„ ë¨¹ëŠ”ë‹¤.
+void one_virus_eat_nutrient(int x, int y) {
+	
+	sort(virus[x][y].begin(), virus[x][y].end());
 
-	deque<int> tmp;
-	int size = virus_map[x][y].size();
+	int size = virus[x][y].size();
 
 	for (int i = 0; i < size; i++) {
-		int age = virus_map[x][y][i];
+		int virus_age = virus[x][y][i]; //¹ÙÀÌ·¯½º ³ªÀÌ
 
-		if (age <=  map[x][y]) {
-			//ë‚˜ì´ê°€ ë” ì ë‹¤ë©´
-			map[x][y] -= age;
-			tmp.push_back(age + 1);
+		if (map[x][y] >=  virus_age) {
+			//¹ÙÀÌ·¯½º ³ªÀÌº¸´Ù ¾çºĞÀÌ ´õ Å©´Ù¸é
+			map[x][y] -= virus_age;
+			virus[x][y][i]++;
 		}
-		else { //ì–‘ë¶„ì´ ë¶€ì¡±í•˜ì—¬ ë‚˜ì´ë§Œí¼ ì–‘ë¶„ì„ ì„­ì·¨í•  ìˆ˜ ì—†ë‹¤ë©´
-			tmp.push_back(-1 * age);
-		}
-	}
-
-	virus_map[x][y] = tmp;
-}
-void all_virus_eat_nutrients() {
-	//ê°ê°ì˜ ë°”ì´ëŸ¬ìŠ¤ëŠ” ë³¸ì¸ì´ ì†í•œ 1*1 í¬ê¸°ì˜ ì¹¸ì— ìˆëŠ” ì–‘ë¶„ì„ ì„­ì·¨í•œë‹¤.
-
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			if (virus_map[i][j].size() > 0) {
-				virus_eat_nutrients(i, j);
-			}
+		else {
+			//¾çºĞÀÌ ºÎÁ·ÇÏ¿© ¾çºĞÀ» ¼·ÃëÇÒ ¼ö ¾ø´Ù¸é
+			virus[x][y][i] *= -1;
 		}
 	}
 }
 
-void dead_virus_change_to_nutrients(int x, int y) {
+void dead_virus_change_to_nutrient(int x, int y) {
+	//¸ğµç ¹ÙÀÌ·¯½º°¡ ¼·Ãë¸¦ ³¡³½ ÈÄ
+	//Á×Àº ¹ÙÀÌ·¯½º°¡ ¾çºĞÀ¸·Î º¯ÇÑ´Ù.
 
-	int size = virus_map[x][y].size();
+	int size = virus[x][y].size();
 
 	for (int i = size - 1; i >= 0; i--) {
-		if (virus_map[x][y][i] < 0) {
-			//ë°”ì´ëŸ¬ìŠ¤ê°€ ì£½ì—ˆìœ¼ë©´
-			map[x][y] += abs(virus_map[x][y][i]) / 2;
-			virus_map[x][y].pop_back();
+		if (virus[x][y][i] < 0) { //Á×Àº ¹ÙÀÌ·¯½ºÀÌ¸é
+			int plus_nutrient = ( -1 * virus[x][y][i] ) / 2;
+			virus[x][y].pop_back();
+			map[x][y] += plus_nutrient;
 		}
-	}
-}
-void all_dead_virus_change_to_nutrients() {
-	//ì£½ì€ ë°”ì´ëŸ¬ìŠ¤ê°€ ì–‘ë¶„ìœ¼ë¡œ ë³€í•œë‹¤.
-
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			if (virus_map[i][j].size() > 0) {
-				dead_virus_change_to_nutrients(i, j);
-			}
+		else {
+			break;
 		}
 	}
 }
 
-void virus_have_baby(int x, int y){
+void have_baby(int x, int y) {
+	//¹ÙÀÌ·¯½º°¡ ¹ø½ÄÀ» ÁøÇàÇÑ´Ù.
 
-	int size = virus_map[x][y].size();
+	int size = virus[x][y].size();
 
 	for (int i = 0; i < size; i++) {
+		if (virus[x][y][i] % 5 == 0) {
+			for (int j = 0; j < 8; j++) {
+				int nx = x + dx[j];
+				int ny = y + dy[j];
 
-		if (virus_map[x][y][i] % 5 != 0) {
-			continue;
-		}
-
-		for (int j = 0; j < 8; j++) {
-			int nx = x + dx[j];
-			int ny = y + dy[j];
-
-			if (inrange(nx, ny)) {
-				//ë‚˜ì´ê°€ 1ì¸ ë°”ì´ëŸ¬ìŠ¤ê°€ ìƒê¸´ë‹¤.
-				virus_map[nx][ny].push_front(1);
+				if (inrange(nx, ny)) {
+					virus[nx][ny].push_front(1);
+				}
 			}
 		}
 	}
-	
 }
-void all_virus_have_babies() {
-	//ë°”ì´ëŸ¬ìŠ¤ê°€ ë²ˆì‹ì„ ì§„í–‰í•œë‹¤.
+void all_virus_eat_nutrient() {
+	//°¢°¢ÀÇ ¹ÙÀÌ·¯½º´Â ¾çºĞÀ» ¼·ÃëÇÑ´Ù.
 
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
-			if (virus_map[i][j].size() > 0) {
-				virus_have_baby(i, j);
+			if (virus[i][j].size() > 0) {
+				one_virus_eat_nutrient(i, j);
 			}
 		}
 	}
 }
 
+void all_dead_virus_change_to_nutrinet() {
 
-void plus_nutrients() {
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= n; j++) {
+			if (virus[i][j].size() > 0) {
+				dead_virus_change_to_nutrient(i, j);
+			}
+		}
+	}
+}
+
+void all_virus_have_baby() {
+	
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= n; j++) {
+			if (virus[i][j].size() > 0) {
+				have_baby(i, j);
+			}
+		}
+	}
+}
+
+void plus_nutrient() {
 
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
 			map[i][j] += plus_map[i][j];
 		}
 	}
+
+}
+void one_cycle() {
+	//»çÀÌÅ¬ ÇÑ ¹ø
+
+	all_virus_eat_nutrient();	
+	all_dead_virus_change_to_nutrinet();
+	all_virus_have_baby();
+
+	plus_nutrient();
+
 }
 void solution() {
 
-	for (int i = 1; i <= k; i++) {
-
-		all_virus_eat_nutrients();
-		all_dead_virus_change_to_nutrients();
-		all_virus_have_babies();
-		plus_nutrients();
-	}
-
-
-	int ans = 0;
+	//ÃÊ±â ¾çºĞ: 5
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
-			ans += virus_map[i][j].size();
+			map[i][j] = 5;
 		}
 	}
-	cout  << ans << "\n";
 
+	for (int i = 0; i < k; i++) {
+		one_cycle();
+	}
+
+	int ans = 0;
+
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= n; j++) {
+			ans += virus[i][j].size();
+		}
+	}
+
+	cout <<  ans;
 }
-
 void input() {
 
 	cin >> n >> m >> k;
@@ -151,24 +162,18 @@ void input() {
 	for (int i = 1; i <= n; i++) {
 		for (int j = 1; j <= n; j++) {
 			cin >> plus_map[i][j];
-			map[i][j] = 5;
 		}
 	}
 
 	for (int i = 0; i < m; i++) {
 		int r, c, age;
 		cin >> r >> c >> age;
-		virus_map[r][c].push_back(age);
-	}
-
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			sort(virus_map[i][j].begin(), virus_map[i][j].end());
-		}
+		virus[r][c].push_back(age);
 	}
 }
 
 int main() {
+
 	ios_base::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
